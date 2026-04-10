@@ -1,0 +1,116 @@
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: users
+// Document ID: {userId}
+// Fields:
+//   - uid: string (required)
+//   - email: string (required)
+//   - displayName: string
+//   - role: string (required, 'employee' | 'admin')
+//   - defaultEmailHigh: string (email for > 50€)
+//   - defaultEmailLow: string (email for <= 50€)
+//   - kmPrice: number (price per km)
+//   - createdAt: timestamp
+//
+// Collection: tickets
+// Document ID: {ticketId}
+// Fields:
+//   - userId: string (required)
+//   - merchantName: string (required)
+//   - date: string
+//   - totalAmount: number (required)
+//   - currency: string
+//   - category: string
+//   - status: string (required, 'pending' | 'approved' | 'rejected')
+//   - imageUrl: string
+//   - emailSent: bool
+//   - createdAt: timestamp
+//
+// Collection: trips
+// Document ID: {tripId}
+// Fields:
+//   - userId: string (required)
+//   - date: string
+//   - startOdometer: number
+//   - endOdometer: number
+//   - distance: number
+//   - totalReimbursement: number
+//   - kmPrice: number
+//   - startImageUrl: string
+//   - endImageUrl: string
+//   - status: string (required, 'pending' | 'approved' | 'rejected')
+//   - createdAt: timestamp
+//
+// ===============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+         (request.auth.token.email == "ignaciodmj@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidUser(data) {
+      return data.uid is string &&
+             data.email is string &&
+             data.role in ['employee', 'admin'];
+    }
+
+    function isValidTicket(data) {
+      return data.userId is string &&
+             data.merchantName is string && data.merchantName.size() > 0 && data.merchantName.size() < 200 &&
+             data.totalAmount is number &&
+             data.status in ['pending', 'approved', 'rejected'] &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidTrip(data) {
+      return data.userId is string &&
+             data.date is string &&
+             data.distance is number &&
+             data.status in ['pending', 'approved', 'rejected'] &&
+             data.createdAt is timestamp;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow create: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if isAuthenticated() && (isAdmin() || (isOwner(userId) && request.resource.data.role == resource.data.role));
+    }
+
+    match /tickets/{ticketId} {
+      allow read: if isAuthenticated() && (isOwner(resource.data.userId) || isAdmin());
+      allow create: if isAuthenticated() && isOwner(request.resource.data.userId) && isValidTicket(request.resource.data);
+      allow update: if isAuthenticated() && (isAdmin() || (isOwner(resource.data.userId) && resource.data.status == 'pending' && isValidTicket(request.resource.data)));
+      allow delete: if isAuthenticated() && isAdmin();
+    }
+
+    match /trips/{tripId} {
+      allow read: if isAuthenticated() && (isOwner(resource.data.userId) || isAdmin());
+      allow create: if isAuthenticated() && isOwner(request.resource.data.userId) && isValidTrip(request.resource.data);
+      allow update: if isAuthenticated() && (isAdmin() || (isOwner(resource.data.userId) && resource.data.status == 'pending' && isValidTrip(request.resource.data)));
+      allow delete: if isAuthenticated() && isAdmin();
+    }
+  }
+}

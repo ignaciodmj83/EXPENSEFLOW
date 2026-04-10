@@ -1,0 +1,5 @@
+{
+  "name": "ExpenseFlow",
+  "description": "Employee expense management with AI-powered receipt scanning and automated billing data extraction.",
+  "requestFramePermissions": ["camera"]
+}

@@ -1,0 +1,72 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["employee", "admin"] },
+        "defaultEmailHigh": { "type": "string", "format": "email", "description": "Email for tickets > 50€" },
+        "defaultEmailLow": { "type": "string", "format": "email", "description": "Email for tickets <= 50€" },
+        "kmPrice": { "type": "number", "description": "Price paid per kilometer" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Ticket": {
+      "title": "Ticket",
+      "description": "Expense ticket or receipt",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "merchantName": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "totalAmount": { "type": "number" },
+        "currency": { "type": "string" },
+        "category": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "imageUrl": { "type": "string" },
+        "emailSent": { "type": "boolean" },
+        "extractedAt": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "merchantName", "totalAmount", "status", "createdAt"]
+    },
+    "Trip": {
+      "title": "Trip",
+      "description": "Business trip mileage record",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "startOdometer": { "type": "number" },
+        "endOdometer": { "type": "number" },
+        "distance": { "type": "number" },
+        "totalReimbursement": { "type": "number" },
+        "kmPrice": { "type": "number" },
+        "startImageUrl": { "type": "string" },
+        "endImageUrl": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "date", "distance", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile documents"
+    },
+    "/tickets/{ticketId}": {
+      "schema": "Ticket",
+      "description": "Expense tickets submitted by employees"
+    },
+    "/trips/{tripId}": {
+      "schema": "Trip",
+      "description": "Mileage trips submitted by employees"
+    }
+  }
+}

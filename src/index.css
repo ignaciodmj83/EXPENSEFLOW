@@ -1,0 +1,51 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 2rem;
+  
+  --color-primary: #000000;
+  --color-accent: #007AFF; /* Apple Blue */
+  --color-success: #34C759; /* Apple Green */
+  --color-border: rgba(0, 0, 0, 0.08);
+  --color-background: #F2F2F7;
+  --color-foreground: #1C1C1E;
+  --color-muted: #E5E5EA;
+  --color-muted-foreground: #8E8E93;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground font-sans antialiased selection:bg-accent/20 selection:text-accent;
+  }
+  * {
+    @apply border-border;
+  }
+}
+
+.glass-card {
+  @apply bg-white/70 backdrop-blur-xl border border-white/40 shadow-[0_4px_24px_rgba(0,0,0,0.04)];
+}
+
+.apple-button {
+  @apply transition-all duration-300 active:scale-95 disabled:opacity-50;
+}
+
+.tech-border {
+  @apply border border-black/5 relative overflow-hidden rounded-3xl;
+}
+
+.data-row {
+  @apply transition-all duration-300 hover:bg-black/[0.02] border-b border-black/[0.03];
+}
+
+.col-header {
+  @apply font-sans text-[11px] uppercase tracking-wider text-muted-foreground font-semibold;
+}
+
+.data-value {
+  @apply font-mono tracking-tight text-sm;
+}
